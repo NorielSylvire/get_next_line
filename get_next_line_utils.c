@@ -6,7 +6,7 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:34:25 by fhongu            #+#    #+#             */
-/*   Updated: 2023/05/09 20:57:27 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/10 19:37:50 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 size_t	ft_strchr(const char *s, int c)
 {
 	unsigned char	ch;
-	int		i;
+	int				i;
 
 	ch = (unsigned char) c;
 	i = 0;
@@ -46,28 +46,33 @@ void	*ft_calloc(size_t count, size_t size)
 	return (retbuff);
 }
 
-size_t	ft_strlen(const char *s)
+size_t	ft_strlen(const char *s, int limit)
 {
 	size_t	len;
 
 	len = 0;
-	while (s[len])
+	while (s[len] && len < (unsigned long) limit)
 		len++;
 	return (len);
 }
 
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strnjoin(char const *s1, char const *s2, int chars_read)
 {
 	size_t	total_size;
 	char	*ret;
 
-	total_size = ft_strlen(s1) + ft_strlen(s2) + 1;
+	if (!s1 || !s2 || chars_read < 0)
+		return (NULL);
+	total_size = ft_strlen(s1, 2147483647) + ft_strlen(s2, chars_read) + 1;
 	ret = ft_calloc(total_size, sizeof (char));
-	if (!ret || !s1 || !s2)
+	if (!ret)
 		return (NULL);
 	while (*s1)
 		*ret++ = *s1++;
-	while (*s2)
+	while (*s2 && chars_read > 0)
+	{
 		*ret++ = *s2++;
+		chars_read--;
+	}
 	return (ret - total_size + 1);
 }

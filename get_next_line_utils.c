@@ -6,13 +6,13 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:34:25 by fhongu            #+#    #+#             */
-/*   Updated: 2023/04/30 22:29:45 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/09 20:57:27 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char	*ft_strchr(const char *s, int c)
+size_t	ft_strchr(const char *s, int c)
 {
 	unsigned char	ch;
 	int		i;
@@ -22,12 +22,12 @@ char	*ft_strchr(const char *s, int c)
 	while (s[i] != '\0')
 	{
 		if (s[i] == ch)
-			return ((char *)((unsigned long) s + i));
+			return (i);
 		i++;
 	}
 	if (ch == '\0')
-		return ((char *)((unsigned long) s + i));
-	return (NULL);
+		return (i);
+	return (-1);
 }
 
 void	*ft_calloc(size_t count, size_t size)

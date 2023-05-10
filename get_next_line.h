@@ -6,7 +6,7 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:32:38 by fhongu            #+#    #+#             */
-/*   Updated: 2023/04/28 23:01:59 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/09 20:57:38 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # endif
 
 char	*get_next_line(int fd);
-char	*ft_strchr(const char *s, int c);
+size_t	ft_strchr(const char *s, int c);
 size_t	ft_strlen(const char *s);
 char	*ft_strjoin(char const *s1, char const *s2);
 void	*ft_calloc(size_t count, size_t size);

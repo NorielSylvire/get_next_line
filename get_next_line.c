@@ -6,17 +6,21 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:32:18 by fhongu            #+#    #+#             */
-/*   Updated: 2023/04/30 17:00:00 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/09 23:08:33 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdio.h>
+#include <fcntl.h>
 
 static char	*next_line(char *str);
 
 static char	*trim_end(char *str);
 
 static char	*read_line(int fd, char *ret);
+
+static void	joinfree(char **ret, char *str);
 
 char	*get_next_line(int fd)
 {
@@ -39,13 +43,14 @@ static char	*read_line(int fd, char *ret)
 {
 	int		chars_read;
 	char	*str;
-	char	*swap;
 
 	str = ft_calloc((BUFFER_SIZE + 1), sizeof (char));
 	chars_read = 1;
 	while (chars_read > 0)
 	{
 		chars_read = read(fd, str, BUFFER_SIZE);
+		if (!chars_read)
+			break ;
 		if (chars_read == -1)
 		{
 			free(str);
@@ -54,11 +59,9 @@ static char	*read_line(int fd, char *ret)
 		}
 		if (ret && str)
 		{
-			swap = ft_strjoin(ret, str);
-			free(ret);
-			ret = swap;
+			joinfree(&ret, str);
 		}
-		if (ft_strchr(str, '\n'))
+		if (ft_strchr(str, '\n') + 1 != 0)
 			break ;
 	}
 	free(str);
@@ -72,10 +75,10 @@ static char	*trim_end(char *str)
 
 	if (*str == '\0')
 		return (NULL);
-	i = 0;
-	while (str[i] && str[i] != '\n')
-		i++;
-	ret = ft_calloc(i + 2, sizeof (char));
+	i = ft_strchr(str, '\n') + 2;
+	if (i == 1)
+		i = ft_strlen(str) + 1;
+	ret = ft_calloc(i, sizeof (char));
 	if (!ret)
 		return (NULL);
 	i = 0;
@@ -112,4 +115,20 @@ static char	*next_line(char *str)
 		ret[j++] = str[i++];
 	free(str);
 	return (ret);
+}
+
+static void	joinfree(char **ret, char *str)
+{
+	char	*swap;
+
+	swap = ft_strjoin(*ret, str);
+	free(*ret);
+	*ret = swap;
+}
+
+int main()
+{
+	printf("%s\n", get_next_line(open("41nonl.txt", O_RDONLY)));
+
+	return 0;
 }

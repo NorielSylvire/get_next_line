@@ -6,26 +6,27 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:32:18 by fhongu            #+#    #+#             */
-/*   Updated: 2023/05/10 22:11:23 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/17 22:31:46 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-//#include <stdio.h>
-//#include <fcntl.h>
+#include <stdio.h>
+#include <fcntl.h>
 
-static char	*next_line(char *str);
+char	*next_line(char *str, int chars);
 
-static char	*trim_end(char *str);
+char	*trim_end(char *str);
 
-static char	*read_line(int fd, char *ret);
+char	*read_line(int fd, char *ret, int *chars_read);
 
-static void	joinfree(char **ret, char *str, int chars_read);
+void	joinfree(char **ret, char *str, int chars_read);
 
 char	*get_next_line(int fd)
 {
 	static char	*str;
 	char		*ret;
+	static int	chars_read;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 		return (NULL);
@@ -35,45 +36,44 @@ char	*get_next_line(int fd)
 		if (!str)
 			return (NULL);
 	}
-	str = read_line(fd, str);
+	str = read_line(fd, str, &chars_read);
 	if (!str)
 		return (NULL);
 	ret = trim_end(str);
-	str = next_line(str);
-	//free(str);
+	str = next_line(str, chars_read);
 	return (ret);
 }
 
-static char	*read_line(int fd, char *ret)
+char	*read_line(int fd, char *ret, int *chars_read)
 {
-	int		chars_read;
 	char	*str;
 
 	str = ft_calloc((BUFFER_SIZE + 1), sizeof (char));
-	chars_read = 1;
+	*chars_read = 1;
 	while (chars_read > 0)
 	{
-		chars_read = read(fd, str, BUFFER_SIZE);
-		if (!chars_read)
+		*chars_read = read(fd, str, BUFFER_SIZE);
+		//printf("\nchars_read = %d\n", chars_read);
+		if (!*chars_read)
 			break ;
-		if (chars_read == -1)
+		if (*chars_read == -1)
 		{
-			free(str);
-			free(ret);
+			ft_free(&str);
+			ft_free(&ret);
 			return (NULL);
 		}
 		if (ret && str)
 		{
-			joinfree(&ret, str, chars_read);
+			joinfree(&ret, str, *chars_read);
 		}
 		if (ft_strchr(str, '\n') + 1 != 0)
 			break ;
 	}
-	free(str);
+	ft_free(&str);
 	return (ret);
 }
 
-static char	*trim_end(char *str)
+char	*trim_end(char *str)
 {
 	char	*ret;
 	size_t	i;
@@ -97,7 +97,7 @@ static char	*trim_end(char *str)
 	return (ret);
 }
 
-static char	*next_line(char *str)
+char	*next_line(char *str, int chars)
 {
 	char	*ret;
 	size_t	i;
@@ -106,9 +106,9 @@ static char	*next_line(char *str)
 	i = 0;
 	while (str[i] && str[i] != '\n')
 		i++;
-	if (!str[i])
+	if (!str[i] && chars == 0)
 	{
-		free(str);
+		ft_free(&str);
 		return (NULL);
 	}
 	ret = ft_calloc(ft_strlen(str, 2147483647) - i + 1, sizeof (char));
@@ -118,25 +118,46 @@ static char	*next_line(char *str)
 	j = 0;
 	while (str[i])
 		ret[j++] = str[i++];
-	free(str);
+	ft_free(&str);
 	return (ret);
 }
 
-static void	joinfree(char **ret, char *str, int chars_read)
+void	joinfree(char **ret, char *str, int chars_read)
 {
 	char	*swap;
 
 	//printf("str: %s\nret: %s\n", str, *ret);
 	swap = ft_strnjoin(*ret, str, chars_read);
-	free(*ret);
+	ft_free(ret);
 	*ret = swap;
 	//printf("swap: %s\n", swap);
 }
 /*
 int main()
 {
-	int fd = open("only_nl.txt", O_RDONLY);
-	printf("%s\n", get_next_line(fd));
-	printf("%s\n", get_next_line(fd));
-	return 0;
+	//int fd = open("only_nl.txt", O_RDONLY);
+	//printf("%s\n", get_next_line(fd));
+	//printf("%s\n", get_next_line(fd));
+	//return 0;
+	
+	int		fd = open("lines_aro_10.txt", O_RDONLY);
+	char	*line;
+	char	str[1];
+	int		hola = 0;
+
+	str[0] = '\0';
+	line = str;
+	while (line)
+	{
+		line = get_next_line(fd);
+		printf("--- LINE: %s\n<---", line);
+		//write (1, line, ft_strlen(line, 1000));
+		free(line);
+		if (line != NULL)
+			hola++;
+	}
+	printf("hola: %d", hola);
+	system ("leaks a.out");
+	close(fd);
+	return (0);
 }*/

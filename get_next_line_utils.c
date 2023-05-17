@@ -6,7 +6,7 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:34:25 by fhongu            #+#    #+#             */
-/*   Updated: 2023/05/10 19:37:50 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/12 19:39:05 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,4 +75,12 @@ char	*ft_strnjoin(char const *s1, char const *s2, int chars_read)
 		chars_read--;
 	}
 	return (ret - total_size + 1);
+}
+
+void	ft_free(char **str)
+{
+	if (!*str)
+		return ;
+	free(*str);
+	*str = NULL;
 }

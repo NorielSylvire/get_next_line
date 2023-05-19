@@ -6,7 +6,7 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:34:25 by fhongu            #+#    #+#             */
-/*   Updated: 2023/05/12 19:39:05 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/19 20:01:14 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,12 @@ void	*ft_calloc(size_t count, size_t size)
 	return (retbuff);
 }
 
-size_t	ft_strlen(const char *s, int limit)
+size_t	ft_strlen(const char *s)
 {
 	size_t	len;
 
 	len = 0;
-	while (s[len] && len < (unsigned long) limit)
+	while (s[len])
 		len++;
 	return (len);
 }
@@ -63,7 +63,10 @@ char	*ft_strnjoin(char const *s1, char const *s2, int chars_read)
 
 	if (!s1 || !s2 || chars_read < 0)
 		return (NULL);
-	total_size = ft_strlen(s1, 2147483647) + ft_strlen(s2, chars_read) + 1;
+	total_size = ft_strlen(s2);
+	if (total_size > (size_t) chars_read)
+		total_size = chars_read;
+	total_size += ft_strlen(s1) + 1;
 	ret = ft_calloc(total_size, sizeof (char));
 	if (!ret)
 		return (NULL);

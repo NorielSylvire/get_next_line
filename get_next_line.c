@@ -6,66 +6,118 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:32:18 by fhongu            #+#    #+#             */
-/*   Updated: 2023/05/17 22:31:46 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/19 20:53:11 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
-#include <fcntl.h>
 
-char	*next_line(char *str, int chars);
+/** @brief Reads the first line of the file pointed to by fd.
+ *
+ * This function takes a file descriptor and attempts to read it in BUFFER_SIZE
+ * increments until either an error, the EOF, or a '\n' character is
+ * encountered.
+ * If no errors were encountered, the line that was read is stored in the
+ * static buffer ret. At this point, ret may contain extra chars after the '\n'
+ * which need to be cleaned at a later stage.
+ *
+ * If an error is encountered, all buffers are free'd and set to NULL, and
+ * NULL is returned.
+ *
+ * @param fd a file descriptor that points to the file to be read
+ * @param ret the static buffer in which the line will be stored
+ * @return The static line containing the line that was read
+ */
+static char	*read_line(int fd, char *ret);
 
-char	*trim_end(char *str);
+/** @brief Creates a new string that contains only the chars before the '\n'.
+ *
+ * Creates a new string that contains only the characters from the static
+ * buffer up to and including the '\n' character. If the static buffer
+ * contains no '\n' the returned string doesn't contain it either.
+ *
+ * If the static buffer is empty or the memory allocation fails, NULL is
+ * returned.
+ *
+ * @param str the static buffer containing the characters read
+ * @return a new string containing chars of str up to and including '\n'
+ */
+static char	*create_return(char *str);
 
-char	*read_line(int fd, char *ret, int *chars_read);
+/** @brief Removes all chars before the '\n' from the static buffer.
+ *
+ * This function is executed after create_return, and it will create
+ * a new string that only contains the characters after the '\n'
+ * character from the static buffer, and then returns it.
+ *
+ * If the memory allocation fails, or the static buffer is empty,
+ * NULL is returned.
+ *
+ * @param str the static buffer
+ * @return A string with the chars after the '\n', if any, else NULL
+ */
+static char	*clean_static(char *str);
 
-void	joinfree(char **ret, char *str, int chars_read);
+/** @brief Executes strnjoin on ret and str, then swaps it with ret.
+ *
+ * A new string is created containing the result of joining ret and
+ * the chars_read first characters of str. Then the old ret is free'd
+ * and ret is assigned this new string.
+ *
+ * ret is passed by reference because we need to modify the value of
+ * the ret variable in another function, not only in the scope of this
+ * function.
+ *
+ * @param ret the address of the string that will contain the line read
+ * @param str a string containing the characters read by the read()
+ * @param chars_read the number of characters read by read()
+ */
+static void	joinfree(char **ret, char *str, int chars_read);
 
 char	*get_next_line(int fd)
 {
 	static char	*str;
 	char		*ret;
-	static int	chars_read;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	{
+		ft_free(&str);
 		return (NULL);
+	}
 	if (!str)
 	{
 		str = ft_calloc(BUFFER_SIZE + 1, sizeof (char));
 		if (!str)
 			return (NULL);
 	}
-	str = read_line(fd, str, &chars_read);
+	str = read_line(fd, str);
 	if (!str)
 		return (NULL);
-	ret = trim_end(str);
-	str = next_line(str, chars_read);
+	ret = create_return(str);
+	str = clean_static(str);
 	return (ret);
 }
 
-char	*read_line(int fd, char *ret, int *chars_read)
+static char	*read_line(int fd, char *ret)
 {
 	char	*str;
+	int		chars_read;
 
 	str = ft_calloc((BUFFER_SIZE + 1), sizeof (char));
-	*chars_read = 1;
+	chars_read = 1;
 	while (chars_read > 0)
 	{
-		*chars_read = read(fd, str, BUFFER_SIZE);
-		//printf("\nchars_read = %d\n", chars_read);
-		if (!*chars_read)
+		chars_read = read(fd, str, BUFFER_SIZE);
+		if (!chars_read)
 			break ;
-		if (*chars_read == -1)
+		if (chars_read == -1)
 		{
 			ft_free(&str);
 			ft_free(&ret);
 			return (NULL);
 		}
 		if (ret && str)
-		{
-			joinfree(&ret, str, *chars_read);
-		}
+			joinfree(&ret, str, chars_read);
 		if (ft_strchr(str, '\n') + 1 != 0)
 			break ;
 	}
@@ -73,7 +125,7 @@ char	*read_line(int fd, char *ret, int *chars_read)
 	return (ret);
 }
 
-char	*trim_end(char *str)
+static char	*create_return(char *str)
 {
 	char	*ret;
 	size_t	i;
@@ -82,7 +134,7 @@ char	*trim_end(char *str)
 		return (NULL);
 	i = ft_strchr(str, '\n') + 2;
 	if (i == 1)
-		i = ft_strlen(str, 2147483647) + 1;
+		i = ft_strlen(str) + 1;
 	ret = ft_calloc(i, sizeof (char));
 	if (!ret)
 		return (NULL);
@@ -97,7 +149,7 @@ char	*trim_end(char *str)
 	return (ret);
 }
 
-char	*next_line(char *str, int chars)
+static char	*clean_static(char *str)
 {
 	char	*ret;
 	size_t	i;
@@ -106,12 +158,12 @@ char	*next_line(char *str, int chars)
 	i = 0;
 	while (str[i] && str[i] != '\n')
 		i++;
-	if (!str[i] && chars == 0)
+	if (!str[i])
 	{
 		ft_free(&str);
 		return (NULL);
 	}
-	ret = ft_calloc(ft_strlen(str, 2147483647) - i + 1, sizeof (char));
+	ret = ft_calloc(ft_strlen(str) - i + 1, sizeof (char));
 	if (!ret)
 		return (NULL);
 	i++;
@@ -122,42 +174,11 @@ char	*next_line(char *str, int chars)
 	return (ret);
 }
 
-void	joinfree(char **ret, char *str, int chars_read)
+static void	joinfree(char **ret, char *str, int chars_read)
 {
 	char	*swap;
 
-	//printf("str: %s\nret: %s\n", str, *ret);
 	swap = ft_strnjoin(*ret, str, chars_read);
 	ft_free(ret);
 	*ret = swap;
-	//printf("swap: %s\n", swap);
 }
-/*
-int main()
-{
-	//int fd = open("only_nl.txt", O_RDONLY);
-	//printf("%s\n", get_next_line(fd));
-	//printf("%s\n", get_next_line(fd));
-	//return 0;
-	
-	int		fd = open("lines_aro_10.txt", O_RDONLY);
-	char	*line;
-	char	str[1];
-	int		hola = 0;
-
-	str[0] = '\0';
-	line = str;
-	while (line)
-	{
-		line = get_next_line(fd);
-		printf("--- LINE: %s\n<---", line);
-		//write (1, line, ft_strlen(line, 1000));
-		free(line);
-		if (line != NULL)
-			hola++;
-	}
-	printf("hola: %d", hola);
-	system ("leaks a.out");
-	close(fd);
-	return (0);
-}*/

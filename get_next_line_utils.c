@@ -6,7 +6,7 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:34:25 by fhongu            #+#    #+#             */
-/*   Updated: 2023/05/19 20:01:14 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/21 18:27:12 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,8 @@ size_t	ft_strchr(const char *s, int c)
 	i = 0;
 	while (s[i] != '\0')
 	{
-		if (s[i] == ch)
-			return (i);
-		i++;
+		if (s[i++] == ch)
+			return (--i);
 	}
 	if (ch == '\0')
 		return (i);
@@ -40,8 +39,8 @@ void	*ft_calloc(size_t count, size_t size)
 	if (!retbuff)
 		return (NULL);
 	retcopy = retbuff;
-	i = 0;
-	while (i++ < count * size)
+	i = -1;
+	while (++i < count * size)
 		*(unsigned char *) retcopy++ = 0;
 	return (retbuff);
 }
@@ -52,7 +51,7 @@ size_t	ft_strlen(const char *s)
 
 	len = 0;
 	while (s[len])
-		len++;
+		++len;
 	return (len);
 }
 

@@ -6,7 +6,7 @@
 /*   By: fhongu <fhongu@student.42madrid.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/21 17:32:18 by fhongu            #+#    #+#             */
-/*   Updated: 2023/05/19 20:53:11 by fhongu           ###   ########.fr       */
+/*   Updated: 2023/05/21 17:42:04 by fhongu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,8 @@ char	*get_next_line(int fd)
 	if (!str)
 		return (NULL);
 	ret = create_return(str);
+	if (!ret)
+		return (ft_free(&str), NULL);
 	str = clean_static(str);
 	return (ret);
 }
@@ -104,6 +106,8 @@ static char	*read_line(int fd, char *ret)
 	int		chars_read;
 
 	str = ft_calloc((BUFFER_SIZE + 1), sizeof (char));
+	if (!str)
+		return (ft_free(&ret), NULL);
 	chars_read = 1;
 	while (chars_read > 0)
 	{
@@ -165,7 +169,7 @@ static char	*clean_static(char *str)
 	}
 	ret = ft_calloc(ft_strlen(str) - i + 1, sizeof (char));
 	if (!ret)
-		return (NULL);
+		return (ft_free(&str), NULL);
 	i++;
 	j = 0;
 	while (str[i])
@@ -180,5 +184,6 @@ static void	joinfree(char **ret, char *str, int chars_read)
 
 	swap = ft_strnjoin(*ret, str, chars_read);
 	ft_free(ret);
-	*ret = swap;
+	if (swap)
+		*ret = swap;
 }
